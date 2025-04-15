@@ -129,38 +129,7 @@ with tab5:
 
     st.header("Carte des retards de livraison")
 
-    # Calcul des retards  
-    order_df['order_delivered_customer_date'] = pd.to_datetime(order_df['order_delivered_customer_date'])
-    order_df['order_estimated_delivery_date'] = pd.to_datetime(order_df['order_estimated_delivery_date'])
-    order_df["delay"] = (order_df["order_delivered_customer_date"] - 
-                         order_df["order_estimated_delivery_date"]).dt.days
-
-    # Fusion correcte des datasets pour inclure les localisations  
-    filtered_geo = orders_customers_df.merge(order_df, on="customer_id")\
-                                      .merge(geolocation_df, 
-                                             left_on="customer_zip_code_prefix", 
-                                             right_on="geolocation_zip_code_prefix")
-
-    # Filtrer les commandes avec des retards significatifs (> 5 jours)  
-    filtered_geo = filtered_geo[filtered_geo["delay"] > 5]
-
-    # Création de la carte Folium sans marqueur fixe  
-    # On utilise le premier point de filtered_geo pour centrer la carte, s'il y en a  
-    if not filtered_geo.empty:
-        initial_location = [filtered_geo["geolocation_lat"].mean(), filtered_geo["geolocation_lng"].mean()]
-    else:
-        initial_location = [0, 0]  # Coordonnées par défaut si filtered_geo est vide
-
-    map_filtered = folium.Map(location=initial_location, zoom_start=5)
-
-    # Ajouter les marqueurs des données  
-    marker_cluster = FastMarkerCluster(data=list(zip(filtered_geo["geolocation_lat"], filtered_geo["geolocation_lng"]))).add_to(map_filtered)
-
-    # Afficher la carte  
-    st_folium(map_filtered, width=725)
-
-    st.markdown("**Commentaire** : Cette carte optimisée met en évidence les zones où les retards de livraison sont les plus fréquents.")
-
+    
 
 ### 6. Recommandations
 with tab6:
