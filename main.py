@@ -8,8 +8,6 @@ from streamlit_folium import st_folium
 import zipfile
 import io
 import requests
-import plotly.express as px
-
 
 # Téléchargement des données  
 @st.cache_data  
@@ -125,47 +123,13 @@ with tab4:
     st.pyplot(fig)
     st.markdown("**Commentaire** : Le graphique montre une différence importante dans la satisfaction client selon le moyen de paiement utilisé. La plupart des méthodes (voucher, boleto, credit_card et debit_card) obtiennent des notes moyennes satisfaisantes autour de 4/5. En revanche, la catégorie 'not defined' présente une note moyenne très basse d'environ 1.7/5. Cette anomalie suggère un problème significatif avec les transactions dont le mode de paiement n'est pas correctement enregistré, ce qui pourrait être une piste d'amélioration prioritaire pour augmenter la satisfaction client globale. Pourquoi est-ce qu'il existe un mode de paiement non identifié ?")
 
-    ### 5. Carte géographique
+### 5. Carte géographique
 
 with tab5:
 
     st.header("Carte des retards de livraison")
 
-    # Calcul des retards  
-    order_df['order_delivered_customer_date'] = pd.to_datetime(order_df['order_delivered_customer_date'])
-    order_df['order_estimated_delivery_date'] = pd.to_datetime(order_df['order_estimated_delivery_date'])
-    order_df["delay"] = (order_df["order_delivered_customer_date"] - 
-                         order_df["order_estimated_delivery_date"]).dt.days
-
-    # Fusion correcte des datasets pour inclure les localisations  
-    filtered_geo = orders_customers_df.merge(order_df, on="customer_id")\
-                                      .merge(geolocation_df, 
-                                             left_on="customer_zip_code_prefix", 
-                                             right_on="geolocation_zip_code_prefix")
-
-    # Filtrer les commandes avec des retards significatifs (> 5 jours)  
-    filtered_geo = filtered_geo[filtered_geo["delay"] > 5]
-
-    # Échantillonnage pour éviter une carte trop chargée
-    if len(filtered_geo) > 1000:
-        filtered_geo = filtered_geo.sample(n=1000, random_state=42)
-
-    # Carte Plotly
-    import plotly.express as px
-
-    fig = px.scatter_geo(
-        filtered_geo,
-        lat='geolocation_lat',
-        lon='geolocation_lng',
-        scope='south america',
-        title="Localisation des retards de livraison (> 5 jours)",
-        opacity=0.5
-    )
-    fig.update_layout(height=600, margin={"r":0,"t":40,"l":0,"b":0})
-    st.plotly_chart(fig)
-
-    st.markdown("**Commentaire** : Cette carte met en évidence les zones géographiques où les retards de livraison sont les plus fréquents.")
-
+    
 
 ### 6. Recommandations
 with tab6:
