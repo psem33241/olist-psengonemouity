@@ -9,3 +9,4 @@ pyarrow==18.0.0
 plotly==5.24.1
 pandas-stubs==2.2.3.241126
 streamlit_folium==0.24.0
+plotly==5.24.1

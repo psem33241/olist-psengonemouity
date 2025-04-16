@@ -8,6 +8,8 @@ from streamlit_folium import st_folium
 import zipfile
 import io
 import requests
+import plotly.express as px
+
 
 # Téléchargement des données  
 @st.cache_data  
@@ -123,7 +125,7 @@ with tab4:
     st.pyplot(fig)
     st.markdown("**Commentaire** : Le graphique montre une différence importante dans la satisfaction client selon le moyen de paiement utilisé. La plupart des méthodes (voucher, boleto, credit_card et debit_card) obtiennent des notes moyennes satisfaisantes autour de 4/5. En revanche, la catégorie 'not defined' présente une note moyenne très basse d'environ 1.7/5. Cette anomalie suggère un problème significatif avec les transactions dont le mode de paiement n'est pas correctement enregistré, ce qui pourrait être une piste d'amélioration prioritaire pour augmenter la satisfaction client globale. Pourquoi est-ce qu'il existe un mode de paiement non identifié ?")
 
-### 5. Carte géographique
+    ### 5. Carte géographique
 
 with tab5:
 
@@ -144,22 +146,25 @@ with tab5:
     # Filtrer les commandes avec des retards significatifs (> 5 jours)  
     filtered_geo = filtered_geo[filtered_geo["delay"] > 5]
 
-    # Création de la carte Folium sans marqueur fixe  
-    # On utilise le premier point de filtered_geo pour centrer la carte, s'il y en a  
-    if not filtered_geo.empty:
-        initial_location = [filtered_geo["geolocation_lat"].mean(), filtered_geo["geolocation_lng"].mean()]
-    else:
-        initial_location = [0, 0]  # Coordonnées par défaut si filtered_geo est vide
+    # Échantillonnage pour éviter une carte trop chargée
+    if len(filtered_geo) > 1000:
+        filtered_geo = filtered_geo.sample(n=1000, random_state=42)
 
-    map_filtered = folium.Map(location=initial_location, zoom_start=5)
+    # Carte Plotly
+    import plotly.express as px
 
-    # Ajouter les marqueurs des données  
-    marker_cluster = FastMarkerCluster(data=list(zip(filtered_geo["geolocation_lat"], filtered_geo["geolocation_lng"]))).add_to(map_filtered)
+    fig = px.scatter_geo(
+        filtered_geo,
+        lat='geolocation_lat',
+        lon='geolocation_lng',
+        scope='south america',
+        title="Localisation des retards de livraison (> 5 jours)",
+        opacity=0.5
+    )
+    fig.update_layout(height=600, margin={"r":0,"t":40,"l":0,"b":0})
+    st.plotly_chart(fig)
 
-    # Afficher la carte  
-    st_folium(map_filtered, width=725)
-
-    st.markdown("**Commentaire** : Cette carte optimisée met en évidence les zones où les retards de livraison sont les plus fréquents.")
+    st.markdown("**Commentaire** : Cette carte met en évidence les zones géographiques où les retards de livraison sont les plus fréquents.")
 
 
 ### 6. Recommandations
